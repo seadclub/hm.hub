@@ -1,0 +1,17 @@
+[package]
+name = "hh"
+version = "0.1.0"
+edition = "2021"
+authors = ["github.com/DmitroPodolsky", "github.com/btwkenji"]
+description = "Centralized platform to manage and access your university homework information."
+license = "MIT"
+repository = "github.com/seadclub/hh.git"
+readme = "README.md"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+log = "0.4.20"
+pretty_env_logger = "0.5.0"
+teloxide = "0.12.2"
+tokio = { version = "1.36.0", features = ["full"] }
