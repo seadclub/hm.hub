@@ -1,10 +1,14 @@
 pub mod bot;
+pub mod db;
+
+use db::create_db;
 use bot::*;
 use teloxide::{dispatching::dialogue::InMemStorage, prelude::*};
 
 #[tokio::main]
 async fn main() {
     log::info!("Starting dialogue bot...");
+    create_db();
     pretty_env_logger::init();
 
     let bot = Bot::from_env();
