@@ -1,13 +1,9 @@
-
 use crate::models::Command;
 use crate::models::{MyDialogue, State};
-use crate::db::{select_all_categories, insert_category, select_categorie, insert_homework, insert_user};
 use teloxide::prelude::*;
 use teloxide::requests::Requester;
-use teloxide::types::{InlineKeyboardButton, InlineKeyboardMarkup};
+use teloxide::types::{ButtonRequest, KeyboardButton, KeyboardMarkup};
 use teloxide::utils::command::BotCommands;
-use chrono::NaiveDate;
-// use crate::utils::check_deadline; // Commented out as it's causing an error
 use teloxide::Bot;
 
 pub async fn help(bot: Bot, msg: Message) -> crate::errors::Result<()> {
@@ -16,19 +12,20 @@ pub async fn help(bot: Bot, msg: Message) -> crate::errors::Result<()> {
     Ok(())
 }
 
-pub async fn cancel(bot: Bot, dialogue: MyDialogue, msg: Message) -> crate::errors::Result<()> {
-    bot.send_message(msg.chat.id, "Cancelling the dialogue.")
+pub async fn start(bot: Bot, dialogue: MyDialogue, msg: Message) -> crate::errors::Result<()> {
+    let button = KeyboardButton::new("Відправити номер").request(ButtonRequest::Contact);
+    let markup = KeyboardMarkup::new([[button]])
+        .resize_keyboard(true)
+        .one_time_keyboard(true);
+    bot.send_message(msg.chat.id, "Привіт! Я бот для тренувань! \n\n \
+                Тут ти можешь зробити для себе тренування у залі, \
+                тренування удома, та дієту, спеціально підібрану для тебе! \n\n \
+                Будь-ласка, відправ спочатку свій номер телефона а потім пошту, для реєстрації або перевірки чи ти вже зареєстрованний!")
+        .reply_markup(markup)
+        .allow_sending_without_reply(true)
         .await?;
-    dialogue.exit().await?;
-    Ok(())
-}
 
-pub async fn invalid_state(bot: Bot, msg: Message) -> crate::errors::Result<()> {
-    bot.send_message(
-        msg.chat.id,
-        "Я тебе не розумію, подивись будь-ласка на команду /help",
-    )
-    .await?;
+    dialogue.update(State::GetPhoneNumber).await?;
     Ok(())
 }
 
