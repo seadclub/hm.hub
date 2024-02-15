@@ -1,32 +1,35 @@
-pub mod bot;
+pub mod telegram;
 pub mod db;
-
+use crate::errors::Result;
+use crate::commands::schema;
+use crate::models::State;
+use dotenv::dotenv;
+use std::sync::Arc;
 use db::create_db;
-use bot::*;
-use teloxide::{dispatching::dialogue::InMemStorage, prelude::*};
+use teloxide::dispatching::dialogue::InMemStorage;
+use teloxide::prelude::*;
+
+mod models;
+mod commands;
+mod errors;
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<()> {
+    dotenv().ok();
     log::info!("Starting dialogue bot...");
     create_db();
-    pretty_env_logger::init();
 
-    let bot = Bot::from_env();
+    let bot = Bot::new(dotenv::var("TELOXIDE_TOKEN")?);
+    let state = Arc::new(State::Start);
 
-    Dispatcher::builder(
-        bot,
-        Update::filter_message()
-            .enter_dialogue::<Message, InMemStorage<State>, State>()
-            .branch(dptree::case![State::Start].endpoint(start))
-            .branch(dptree::case![State::ReceiveFullName].endpoint(receive_full_name))
-            .branch(dptree::case![State::ReceiveAge { full_name }].endpoint(receive_age))
-            .branch(
-                dptree::case![State::ReceiveLocation { full_name, age }].endpoint(receive_location),
-            ),
-    )
-    .dependencies(dptree::deps![InMemStorage::<State>::new()])
+    Dispatcher::builder(bot, schema())
+    .dependencies(dptree::deps![
+        InMemStorage::<State>::new(),
+        Arc::clone(&state)
+    ])
     .enable_ctrlc_handler()
     .build()
     .dispatch()
     .await;
+    Ok(())
 }
