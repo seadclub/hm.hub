@@ -2,17 +2,15 @@
 name = "hh"
 version = "0.1.0"
 edition = "2021"
-authors = ["github.com/DmitroPodolsky", "github.com/geekenji"]
-description = "Centralized platform to manage and access your university homework information."
-license = "MIT"
-repository = "github.com/seadclub/hh.git"
 readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 log = "0.4.20"
-pretty_env_logger = "0.5.0"
-rusqlite = "0.30.0"
-teloxide = "0.12.2"
+rusqlite = { version = "0.30.0", features = ["bundled"] }
+teloxide = { version = "0.12.2", features = ["macros"] }
 tokio = { version = "1.36.0", features = ["full"] }
+dotenv = "0.15.0"
+thiserror = "1.0.56"
+chrono = "0.4.34"
