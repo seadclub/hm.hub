@@ -51,7 +51,7 @@ mod tests {
         conn.execute("INSERT INTO category (name) VALUES (?)", ["test"])
             .expect("Failed to insert into category");
         conn.execute(
-            "INSERT INTO homework_hub (name, desc, deadline, category_id, user_id) VALUES (?, ?, ?, ?, ?)",
+            "INSERT INTO homework (name, desc, deadline, category_id, user_id) VALUES (?, ?, ?, ?, ?)",
             ["test", "test", "2021-12-12", "1", "1"],
         )
         .expect("Failed to insert into hh.db");
