@@ -110,3 +110,23 @@ pub fn insert_homework(name: &str, desc: &str, deadline: &str, category_id: &i32
     log::info!("DB created successfully!");
 >>>>>>> 37cdce1 (chore: format code)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_create_db_and_insert() {
+        create_db();
+        let conn = Connection::open("hh.db").expect("Failed to open database");
+        conn.execute("INSERT INTO users DEFAULT VALUES", [])
+            .expect("Failed to insert into users");
+        conn.execute("INSERT INTO category (name) VALUES (?)", ["test"])
+            .expect("Failed to insert into category");
+        conn.execute(
+            "INSERT INTO homework_hub (name, desc, deadline, category_id, user_id) VALUES (?, ?, ?, ?, ?)",
+            ["test", "test", "2021-12-12", "1", "1"],
+        )
+        .expect("Failed to insert into hh.db");
+    }
+}
