@@ -9,4 +9,4 @@
 *.exe
 .cargo/
 *.bak
-your_database.db
+*.db
