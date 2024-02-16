@@ -3,41 +3,37 @@ use rusqlite::{Connection, Error};
 use crate::models::MyDialogue;
 
 pub fn create_db() {
-    let conn = Connection::open("hh.db").expect("Failed to establish connection to db");
+    let conn = Connection::open("your_database.db").expect("Failed to open database");
 
     conn.execute(
         "CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT
-            )",
+             id INTEGER PRIMARY KEY AUTOINCREMENT
+         )",
         [],
-    )
-    .expect("Failed to create users table");
+    ).expect("Failed to create users table");
 
     conn.execute(
         "CREATE TABLE IF NOT EXISTS category (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL
-            )",
+             id INTEGER PRIMARY KEY AUTOINCREMENT,
+             name TEXT NOT NULL
+         )",
         [],
-    )
-    .expect("Failed to create category table");
+    ).expect("Failed to create category table");
 
     conn.execute(
-        "CREATE TABLE IF NOT EXISTS homework (
-            name TEXT PRIMARY KEY,
-            desc TEXT NOT NULL,
-            deadline DATE,
-            date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            category_id INTEGER,
-            user_id INTEGER,
-            FOREIGN KEY (category_id) REFERENCES category(id),
-            FOREIGN KEY (user_id) REFERENCES users(id)
-            )",
+        "CREATE TABLE IF NOT EXISTS homework_hub (
+             name TEXT PRIMARY KEY,
+             desc TEXT NOT NULL,
+             deadline DATE,
+             date_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+             category_id INTEGER,
+             user_id INTEGER,
+             FOREIGN KEY (category_id) REFERENCES category(id),
+             FOREIGN KEY (user_id) REFERENCES users(id)
+         )",
         [],
-    )
-    .expect("Failed to create homework_hub table");
+    ).expect("Failed to create homework_hub table");
 
-<<<<<<< HEAD
     log::info!("created database successfully!");
 }
 
@@ -106,27 +102,4 @@ pub fn insert_homework(name: &str, desc: &str, deadline: &str, category_id: &i32
     )?;
 
     Ok(())
-=======
-    log::info!("DB created successfully!");
->>>>>>> 37cdce1 (chore: format code)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_create_db_and_insert() {
-        create_db();
-        let conn = Connection::open("hh.db").expect("Failed to open database");
-        conn.execute("INSERT INTO users DEFAULT VALUES", [])
-            .expect("Failed to insert into users");
-        conn.execute("INSERT INTO category (name) VALUES (?)", ["test"])
-            .expect("Failed to insert into category");
-        conn.execute(
-            "INSERT INTO homework_hub (name, desc, deadline, category_id, user_id) VALUES (?, ?, ?, ?, ?)",
-            ["test", "test", "2021-12-12", "1", "1"],
-        )
-        .expect("Failed to insert into hh.db");
-    }
 }
