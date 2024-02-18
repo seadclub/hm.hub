@@ -14,21 +14,19 @@ pub type MyDialogue = Dialogue<State, InMemStorage<State>>;
 pub enum Command {
     #[command(description = "display this text.")]
     Help,
-    #[command(description = "start the purchase procedure.")]
-    Start,
     #[command(description = "cancel the purchase procedure.")]
     Cancel,
+    #[command(description = "create new hometask")]
+    Add,
 }
 
 #[derive(Clone, Default)]
 pub enum State {
     #[default]
     Start,
-    GetPhoneNumber,
-    GetEmail {
-        phone_number: String,
-    },
-    GetAge {
-        phone_number: String,
-    }
+    ReceiveProductChoice,
+    CreateCategorie,
+    AddTaskName { categorie: String },
+    AddDescription { categorie: String, taskname: String },
+    CreateTask { categorie: String, taskname: String, description: String },
 }
