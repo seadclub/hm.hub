@@ -10,7 +10,6 @@ pub enum Errors {
     #[error(transparent)]
     InMemStorageError(#[from] teloxide::dispatching::dialogue::InMemStorageError),
 
-
     #[error(transparent)]
     ParseIntError(#[from] std::num::ParseIntError),
 }
