@@ -71,7 +71,6 @@ pub fn insert_user(msg: MyDialogue) -> Result<(), Error> {
             "INSERT INTO users(id) VALUES (?)",
             [&msg.chat_id().to_string()],
         )?;
-    } else {
     }
 
     Ok(())
