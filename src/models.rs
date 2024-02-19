@@ -23,17 +23,17 @@ pub enum State {
     #[default]
     Start,
     ReceiveProductChoice,
-    CreateCategorie,
+    CreateCategory,
     AddTaskName {
         category: String,
     },
     AddDescription {
         category: String,
-        task_name: String,
+        taskname: String,
     },
     CreateTask {
         category: String,
-        task_name: String,
+        taskname: String,
         description: String,
     },
 }
