@@ -3,6 +3,7 @@ use crate::db::{
 };
 use crate::models::Command;
 use crate::models::{MyDialogue, State};
+use crate::utils::get_telegram_user_id;
 use chrono::NaiveDate;
 use teloxide::{
     prelude::*,
@@ -13,6 +14,12 @@ use teloxide::{
     Bot,
 };
 
+pub async fn start(bot: Bot, msg: Message) -> crate::errors::Result<()> {
+    bot.send_message(msg.chat.id, "Welcome to Homework Helper!")
+        .await?;
+    Ok(())
+}
+
 pub async fn help(bot: Bot, msg: Message) -> crate::errors::Result<()> {
     bot.send_message(msg.chat.id, Command::descriptions().to_string())
         .await?;
@@ -20,7 +27,7 @@ pub async fn help(bot: Bot, msg: Message) -> crate::errors::Result<()> {
 }
 
 pub async fn cancel(bot: Bot, dialogue: MyDialogue, msg: Message) -> crate::errors::Result<()> {
-    bot.send_message(msg.chat.id, "Canceling...").await?;
+    bot.send_message(msg.chat.id, "Canceled").await?;
     dialogue.exit().await?;
     Ok(())
 }
@@ -28,7 +35,7 @@ pub async fn cancel(bot: Bot, dialogue: MyDialogue, msg: Message) -> crate::erro
 pub async fn invalid_state(bot: Bot, msg: Message) -> crate::errors::Result<()> {
     bot.send_message(
         msg.chat.id,
-        "Я тебе не розумію, подивись будь-ласка на команду /help",
+        "I don't understand you. Use /help for the list of available commands.",
     )
     .await?;
     Ok(())
@@ -36,7 +43,7 @@ pub async fn invalid_state(bot: Bot, msg: Message) -> crate::errors::Result<()> 
 
 pub async fn add(bot: Bot, dialogue: MyDialogue, msg: Message) -> crate::errors::Result<()> {
     let categories = select_all_categories().unwrap();
-    let create_row = InlineKeyboardButton::callback("create category", "create");
+    let create_row = InlineKeyboardButton::callback("Add subject", "add");
     let mut products = categories
         .iter()
         .map(|product| {
@@ -49,7 +56,7 @@ pub async fn add(bot: Bot, dialogue: MyDialogue, msg: Message) -> crate::errors:
 
     if categories.len() <= 4 {
         products.push(vec![create_row]);
-        bot.send_message(msg.chat.id, "Select a product:")
+        bot.send_message(msg.chat.id, "Select a subject:")
             .reply_markup(InlineKeyboardMarkup::new(products))
             .await?;
 
@@ -74,7 +81,7 @@ pub async fn add(bot: Bot, dialogue: MyDialogue, msg: Message) -> crate::errors:
         products.push(additional_row);
         products.push(vec![create_row]);
 
-        bot.send_message(msg.chat.id, "Select a product:")
+        bot.send_message(msg.chat.id, "Select a subject:")
             .reply_markup(InlineKeyboardMarkup::new(products))
             .await?;
 
@@ -89,22 +96,22 @@ pub async fn receive_add_button(
     dialogue: MyDialogue,
     q: CallbackQuery,
 ) -> crate::errors::Result<()> {
-    insert_user(dialogue.clone()).unwrap();
+    insert_user(&get_telegram_user_id(&dialogue)).unwrap();
     if let Some(product) = &q.data {
         if product == "create" {
-            bot.send_message(dialogue.chat_id(), "Enter the name of the new product:")
+            bot.send_message(dialogue.chat_id(), "Enter the name of the new subject:")
                 .await?;
             dialogue.update(State::CreateCategory).await?;
         } else if product.starts_with("next") || product.starts_with("previous") {
             let page = product.chars().last().unwrap().to_digit(10).unwrap() as usize;
-            let create_row = InlineKeyboardButton::callback("create category", "create");
+            let create_row = InlineKeyboardButton::callback("Create a new subject", "create");
             let mut products = pages(page);
             products.push(vec![create_row]);
-            bot.send_message(dialogue.chat_id(), "Select a product:")
+            bot.send_message(dialogue.chat_id(), "Select a subject:")
                 .reply_markup(InlineKeyboardMarkup::new(products))
                 .await?;
         } else {
-            bot.send_message(dialogue.chat_id(), "send task name:")
+            bot.send_message(dialogue.chat_id(), "Subject name:")
                 .await?;
             dialogue
                 .update(State::AddTaskName {
@@ -123,7 +130,7 @@ pub async fn send_category(
     msg: Message,
 ) -> crate::errors::Result<()> {
     insert_category(&msg.text().unwrap()).unwrap();
-    bot.send_message(dialogue.chat_id(), "send task name:")
+    bot.send_message(dialogue.chat_id(), "Send homework name:")
         .await?;
     dialogue
         .update(State::AddTaskName {
@@ -140,7 +147,7 @@ pub async fn send_taskname(
     msg: Message,
     category: String,
 ) -> crate::errors::Result<()> {
-    bot.send_message(dialogue.chat_id(), "send description:")
+    bot.send_message(dialogue.chat_id(), "Send description of the homework:")
         .await?;
     dialogue
         .update(State::AddDescription {
@@ -157,7 +164,7 @@ pub async fn send_description(
     msg: Message,
     (category, taskname): (String, String),
 ) -> crate::errors::Result<()> {
-    bot.send_message(dialogue.chat_id(), "send deadline(example: 2023-04-12):")
+    bot.send_message(dialogue.chat_id(), "Send deadline\nExample: 2023-04-12):")
         .await?;
     dialogue
         .update(State::CreateTask {
@@ -181,7 +188,7 @@ pub async fn send_deadline(
             &description,
             &msg.text().unwrap(),
             &select_category(&category).unwrap(),
-            dialogue.clone(),
+            &get_telegram_user_id(&dialogue),
         )
         .unwrap();
         bot.send_message(dialogue.chat_id(), "Task has been created successfully!")
@@ -190,7 +197,7 @@ pub async fn send_deadline(
     } else {
         bot.send_message(
             dialogue.chat_id(),
-            "Invalid deadline format. Please enter the deadline in the format: YYYY-MM-DD",
+            "Invalid deadline format. Please enter the deadline in the format: YYYY-MM-DD\nExample: 2023-04-12",
         )
         .await?;
     }
