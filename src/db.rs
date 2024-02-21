@@ -1,11 +1,10 @@
-use crate::models::MyDialogue;
 use rusqlite::{Connection, Error};
 
 fn create_connection() -> Result<Connection, Error> {
     Connection::open("hh.db")
 }
 
-pub fn create_db() {
+pub fn create_db() -> Result<(), Error> {
     let conn = create_connection().expect("Failed to open database connection at create_db");
 
     conn.execute(
@@ -40,7 +39,7 @@ pub fn create_db() {
     )
     .expect("Failed to create `homework` table");
 
-    log::info!("Database created successfully!");
+    Ok(())
 }
 
 pub fn select_all_categories() -> Result<Vec<String>, Error> {
@@ -49,28 +48,23 @@ pub fn select_all_categories() -> Result<Vec<String>, Error> {
 
     let mut stmt = conn.prepare("SELECT name FROM category")?;
 
-    let category_iter = stmt.query_map([], |row| Ok(row.get(0)?))?;
-
-    let mut categories = Vec::new();
-
-    for name in category_iter {
-        categories.push(name?);
-    }
+    let categories = stmt
+        .query_map([], |row| row.get(0))?
+        .map(|result| result.unwrap())
+        .collect();
 
     Ok(categories)
 }
 
-pub fn insert_user(msg: MyDialogue) -> Result<(), Error> {
-    let conn = create_connection().expect("Failed to open database connection at insert_user");
+pub fn insert_user(user_id: &str) -> Result<(), Error> {
+    let conn =
+        create_connection().expect("Failed to open database connection at insert_user_by_id");
 
     let mut stmt = conn.prepare("SELECT COUNT(*) FROM users WHERE id = ?")?;
-    let user_exists: i64 = stmt.query_row([msg.chat_id().to_string()], |row| row.get(0))?;
+    let user_exists: i64 = stmt.query_row([user_id], |row| row.get(0))?;
 
     if user_exists == 0 {
-        conn.execute(
-            "INSERT INTO users(id) VALUES (?)",
-            [&msg.chat_id().to_string()],
-        )?;
+        conn.execute("INSERT INTO users(id) VALUES (?)", [user_id])?;
     }
 
     Ok(())
@@ -100,20 +94,65 @@ pub fn insert_homework(
     desc: &str,
     deadline: &str,
     category_id: &i32,
-    msg: MyDialogue,
+    user_id: &str,
 ) -> Result<(), Error> {
     let conn = create_connection().expect("Failed to open database connection at insert_homework");
 
     conn.execute(
         "INSERT INTO homework (name, desc, deadline, category_id, user_id) VALUES (?, ?, ?, ?, ?)",
-        &[
-            name,
-            desc,
-            deadline,
-            &category_id.to_string(),
-            &msg.chat_id().to_string(),
-        ],
+        &[name, desc, deadline, &category_id.to_string(), user_id],
     )?;
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_create_db() {
+        create_db().unwrap();
+    }
+
+    #[test]
+    fn test_create_connection() {
+        create_connection().unwrap();
+    }
+
+    #[test]
+    fn test_insert_user() {
+        let result = insert_user("1234");
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_insert_category() {
+        insert_category("test_category_name").unwrap();
+    }
+
+    #[test]
+    fn test_select_category() {
+        let category_id = select_category("test_category_name").unwrap();
+        assert_eq!(category_id, 1);
+    }
+
+    #[test]
+    fn test_insert_homework() {
+        insert_homework(
+            "test_homework_name",
+            "test_description",
+            "2023-04-12",
+            &1,
+            "1234",
+        )
+        .unwrap();
+    }
+
+    #[test]
+    fn test_select_all_categories() {
+        let categories = select_all_categories().unwrap();
+        let contains = categories.contains(&"test_category_name".to_string());
+        assert_eq!(contains, true);
+    }
 }
