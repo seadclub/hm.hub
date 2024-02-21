@@ -1,18 +1,17 @@
 use crate::models::{Command, State};
 use crate::telegram::commands::*;
-use teloxide::dispatching::dialogue::InMemStorage;
-use teloxide::dispatching::{dialogue, DpHandlerDescription};
-use teloxide::dptree;
-use teloxide::dptree::{case, Handler};
-use teloxide::prelude::*;
+use teloxide::{
+    dispatching::{dialogue, dialogue::InMemStorage, DpHandlerDescription},
+    dptree::{case, Handler},
+    prelude::*,
+    types::Update,
+};
 
 pub fn schema() -> Handler<'static, DependencyMap, crate::errors::Result<()>, DpHandlerDescription> {
     let command_handler = teloxide::filter_command::<Command, _>()
-        .branch(
-            case![State::Start]
-                .branch(case![Command::Help].endpoint(help))
-                .branch(case![Command::Add].endpoint(add)),
-        )
+        .branch(case![Command::Start].endpoint(start))
+        .branch(case![Command::Help].endpoint(help))
+        .branch(case![Command::Add].endpoint(add))
         .branch(case![Command::Cancel].endpoint(cancel));
 
     let callback_query_handler = Update::filter_callback_query()
@@ -20,6 +19,8 @@ pub fn schema() -> Handler<'static, DependencyMap, crate::errors::Result<()>, Dp
 
     let message_handler = Update::filter_message()
         .branch(command_handler)
+        .branch(case![Command::Help].endpoint(help))
+        .branch(case![Command::Add].endpoint(add))
         .branch(case![State::CreateCategory].endpoint(send_category))
         .branch(case![State::AddTaskName { category }].endpoint(send_taskname))
         .branch(case![State::AddDescription { category, taskname }].endpoint(send_description))
