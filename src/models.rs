@@ -10,6 +10,8 @@ pub type MyDialogue = Dialogue<State, InMemStorage<State>>;
     description = "These commands are supported:"
 )]
 pub enum Command {
+    #[command(description = "start the bot")]
+    Start,
     #[command(description = "display this text")]
     Help,
     #[command(description = "cancel the purchase procedure")]
