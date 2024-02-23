@@ -1,1 +1,2 @@
-pub mod basic_methods;
+pub mod commands;
+pub mod handler;

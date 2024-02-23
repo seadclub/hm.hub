@@ -1,20 +1,20 @@
-
 use teloxide::dispatching::dialogue::InMemStorage;
 use teloxide::prelude::Dialogue;
 use teloxide::utils::command::BotCommands;
 
 pub type MyDialogue = Dialogue<State, InMemStorage<State>>;
 
-/// These commands are supported:
 #[derive(BotCommands, Clone)]
 #[command(
     rename_rule = "lowercase",
     description = "These commands are supported:"
 )]
 pub enum Command {
-    #[command(description = "display this text.")]
+    #[command(description = "start the bot")]
+    Start,
+    #[command(description = "display this text")]
     Help,
-    #[command(description = "cancel the purchase procedure.")]
+    #[command(description = "cancel the purchase procedure")]
     Cancel,
     #[command(description = "create new hometask")]
     Add,
@@ -25,8 +25,17 @@ pub enum State {
     #[default]
     Start,
     ReceiveProductChoice,
-    CreateCategorie,
-    AddTaskName { categorie: String },
-    AddDescription { categorie: String, taskname: String },
-    CreateTask { categorie: String, taskname: String, description: String },
+    CreateCategory,
+    AddTaskName {
+        category: String,
+    },
+    AddDescription {
+        category: String,
+        taskname: String,
+    },
+    CreateTask {
+        category: String,
+        taskname: String,
+        description: String,
+    },
 }
