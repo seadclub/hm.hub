@@ -1,49 +1,19 @@
 use crate::db::{
     insert_category, insert_homework, insert_user, select_all_categories, select_category,
 };
-use crate::models::Command;
 use crate::models::{MyDialogue, State};
-use crate::utils::get_telegram_user_id;
-use chrono::NaiveDate;
 use teloxide::{
     prelude::*,
     requests::Requester,
     types::{CallbackQuery, Message},
     types::{InlineKeyboardButton, InlineKeyboardMarkup},
-    utils::command::BotCommands,
     Bot,
 };
-
-pub async fn start(bot: Bot, msg: Message) -> crate::errors::Result<()> {
-    bot.send_message(msg.chat.id, "Welcome to Homework Helper!")
-        .await?;
-    Ok(())
-}
-
-pub async fn help(bot: Bot, msg: Message) -> crate::errors::Result<()> {
-    bot.send_message(msg.chat.id, Command::descriptions().to_string())
-        .await?;
-    Ok(())
-}
-
-pub async fn cancel(bot: Bot, dialogue: MyDialogue, msg: Message) -> crate::errors::Result<()> {
-    bot.send_message(msg.chat.id, "Canceled").await?;
-    dialogue.exit().await?;
-    Ok(())
-}
-
-pub async fn invalid_state(bot: Bot, msg: Message) -> crate::errors::Result<()> {
-    bot.send_message(
-        msg.chat.id,
-        "I don't understand you. Use /help for the list of available commands.",
-    )
-    .await?;
-    Ok(())
-}
+use crate::telegram::utils::{check_deadline,pages,get_telegram_user_id};
 
 pub async fn add(bot: Bot, dialogue: MyDialogue, msg: Message) -> crate::errors::Result<()> {
     let categories = select_all_categories().unwrap();
-    let create_row = InlineKeyboardButton::callback("Add subject", "add");
+    let create_row = InlineKeyboardButton::callback("Add subject", "create");
     let mut products = categories
         .iter()
         .map(|product| {
@@ -202,65 +172,4 @@ pub async fn send_deadline(
         .await?;
     }
     Ok(())
-}
-
-pub fn check_deadline(deadline: &str) -> bool {
-    let date = NaiveDate::parse_from_str(deadline, "%Y-%m-%d");
-    match date {
-        Ok(_) => true,
-        Err(_) => false,
-    }
-}
-
-pub fn pages(page: usize) -> Vec<Vec<InlineKeyboardButton>> {
-    let categories = select_all_categories().unwrap();
-    let additional_row: Vec<InlineKeyboardButton> = ["next", "previous"]
-        .iter()
-        .map(|&product| {
-            let callback_data = match product {
-                "next" => format!("next_{}", page + 1),
-                "previous" => format!("previous_{}", page - 1),
-                _ => panic!("Unknown product type"),
-            };
-            InlineKeyboardButton::callback(product.to_string(), callback_data)
-        })
-        .collect();
-
-    if categories.len() <= page * 4 {
-        let mut products = categories[((page - 1) * 4)..]
-            .iter()
-            .map(|product| {
-                vec![InlineKeyboardButton::callback(
-                    product.to_string(),
-                    product.to_string(),
-                )]
-            })
-            .collect::<Vec<_>>();
-        products.push(vec![additional_row[1].clone()]);
-        return products;
-    } else if page == 1 {
-        let mut products = categories[..4]
-            .iter()
-            .map(|product| {
-                vec![InlineKeyboardButton::callback(
-                    product.to_string(),
-                    product.to_string(),
-                )]
-            })
-            .collect::<Vec<_>>();
-        products.push(vec![additional_row[0].clone()]);
-        return products;
-    } else {
-        let mut products = categories[((page - 1) * 4)..(page * 4)]
-            .iter()
-            .map(|product| {
-                vec![InlineKeyboardButton::callback(
-                    product.to_string(),
-                    product.to_string(),
-                )]
-            })
-            .collect::<Vec<_>>();
-        products.push(additional_row);
-        return products;
-    }
 }
