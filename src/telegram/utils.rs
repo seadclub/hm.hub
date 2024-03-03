@@ -66,3 +66,25 @@ pub fn pages(page: usize) -> Vec<Vec<InlineKeyboardButton>> {
 pub fn get_telegram_user_id(msg: &MyDialogue) -> String {
     return msg.chat_id().to_string()
 }
+
+pub fn edit_buttons() -> Vec<Vec<InlineKeyboardButton>> {
+    let edit_keys = vec!["Deadline", "Description", "TaskName", "Category"];
+    let finish_button = InlineKeyboardButton::callback("Finish", "finish");
+
+    let mut inlines_buttons = vec![];
+
+    let edit_buttons = edit_keys
+        .iter()
+        .map(|button| {
+            InlineKeyboardButton::callback(
+                button.to_string(),
+                button.to_string().to_lowercase(),
+            )
+        })
+        .collect::<Vec<_>>();
+
+    inlines_buttons.push(edit_buttons);
+    inlines_buttons.push(vec![finish_button]);
+    
+    inlines_buttons
+}
