@@ -1,3 +1,4 @@
+use crate::models::Task;
 use rusqlite::{Connection, Error};
 
 fn create_connection() -> Result<Connection, Error> {
@@ -56,6 +57,25 @@ pub fn select_all_categories() -> Result<Vec<String>, Error> {
     Ok(categories)
 }
 
+pub fn select_task(task_name: &str) -> Result<Task, rusqlite::Error> {
+    let conn =
+        create_connection().expect("Failed to open database connection at select_all_categories");
+
+
+    let task: Task =
+    conn.query_row("SELECT * FROM homework WHERE name = ?", &[task_name], |row| {
+        Ok(Task {
+            name: task_name.to_string(),
+            desc: row.get("desc")?,
+            deadline: row.get("deadline")?,
+            date_created: row.get("date_created")?,
+            category_id: row.get("category_id")?,
+        })
+    })?;
+
+    Ok(task)
+}
+
 pub fn insert_user(user_id: &str) -> Result<(), Error> {
     let conn =
         create_connection().expect("Failed to open database connection at insert_user_by_id");
@@ -101,6 +121,51 @@ pub fn insert_homework(
     conn.execute(
         "INSERT INTO homework (name, desc, deadline, category_id, user_id) VALUES (?, ?, ?, ?, ?)",
         &[name, desc, deadline, &category_id.to_string(), user_id],
+    )?;
+
+    Ok(())
+}
+
+pub fn update_taskname(old_name: &str, new_name: &str) -> Result<(), Error> {
+    let conn = create_connection().expect("Failed to open database connection at update_taskname");
+
+    conn.execute(
+        "UPDATE homework SET name = ? WHERE name = ?",
+        &[new_name, old_name],
+    )?;
+
+    Ok(())
+}
+
+pub fn update_description(name: &str, new_desc: &str) -> Result<(), Error> {
+    let conn =
+        create_connection().expect("Failed to open database connection at update_description");
+
+    conn.execute(
+        "UPDATE homework SET desc = ? WHERE name = ?",
+        &[new_desc, name],
+    )?;
+
+    Ok(())
+}
+
+pub fn update_deadline(name: &str, new_deadline: &str) -> Result<(), Error> {
+    let conn = create_connection().expect("Failed to open database connection at update_deadline");
+
+    conn.execute(
+        "UPDATE homework SET deadline = ? WHERE name = ?",
+        &[new_deadline, name],
+    )?;
+
+    Ok(())
+}
+
+pub fn update_category(name: &str, new_category: &str) -> Result<(), Error> {
+    let conn = create_connection().expect("Failed to open database connection at update_category");
+
+    conn.execute(
+        "UPDATE homework SET category_id = ? WHERE name = ?",
+        &[new_category, name],
     )?;
 
     Ok(())
