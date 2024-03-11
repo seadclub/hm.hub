@@ -12,13 +12,13 @@ pub type MyDialogue = Dialogue<State, InMemStorage<State>>;
 pub enum Command {
     #[command(description = "start the bot")]
     Start,
-    #[command(description = "display this text")]
+    #[command(description = "help message")]
     Help,
-    #[command(description = "cancel the purchase procedure")]
+    #[command(description = "cancel current operation")]
     Cancel,
     #[command(description = "create new hometask")]
     Add,
-    #[command(description = "Edit hometask")]
+    #[command(description = "edit hometask")]
     Edit,
 }
 
