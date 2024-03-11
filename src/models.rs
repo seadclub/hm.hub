@@ -18,13 +18,15 @@ pub enum Command {
     Cancel,
     #[command(description = "create new hometask")]
     Add,
+    #[command(description = "Edit hometask")]
+    Edit,
 }
 
 #[derive(Clone, Default)]
 pub enum State {
     #[default]
     Start,
-    ReceiveProductChoice,
+    ReceivAddChoice,
     CreateCategory,
     AddTaskName {
         category: String,
@@ -38,4 +40,28 @@ pub enum State {
         taskname: String,
         description: String,
     },
+    ReceivEditChoice {
+        taskname: String,
+    },
+    EditTaskName {
+        taskname: String,
+    },
+    EditDescription {
+        taskname: String,
+    },
+    EditDeadline {
+        taskname: String,
+    },
+    EditCategory {
+        taskname: String,
+    },
+}
+
+#[derive(Debug)]
+pub struct Task {
+    pub name: String,
+    pub desc: String,
+    pub deadline: String,
+    pub date_created: String,
+    pub category_id: i32,
 }

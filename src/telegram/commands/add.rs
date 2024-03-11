@@ -1,7 +1,8 @@
 use crate::db::{
-    insert_category, insert_homework, insert_user, select_all_categories, select_category,
+    insert_category, insert_homework, insert_user, select_all_categories, select_category, select_task,
 };
 use crate::models::{MyDialogue, State};
+use crate::telegram::utils::{check_deadline, get_telegram_user_id, pages};
 use teloxide::{
     prelude::*,
     requests::Requester,
@@ -9,7 +10,6 @@ use teloxide::{
     types::{InlineKeyboardButton, InlineKeyboardMarkup},
     Bot,
 };
-use crate::telegram::utils::{check_deadline,pages,get_telegram_user_id};
 
 pub async fn add(bot: Bot, dialogue: MyDialogue, msg: Message) -> crate::errors::Result<()> {
     let categories = select_all_categories().unwrap();
@@ -30,7 +30,7 @@ pub async fn add(bot: Bot, dialogue: MyDialogue, msg: Message) -> crate::errors:
             .reply_markup(InlineKeyboardMarkup::new(products))
             .await?;
 
-        dialogue.update(State::ReceiveProductChoice).await?;
+        dialogue.update(State::ReceivAddChoice).await?;
         return Ok(());
     } else {
         let mut products = categories[..4]
@@ -55,7 +55,7 @@ pub async fn add(bot: Bot, dialogue: MyDialogue, msg: Message) -> crate::errors:
             .reply_markup(InlineKeyboardMarkup::new(products))
             .await?;
 
-        dialogue.update(State::ReceiveProductChoice).await?;
+        dialogue.update(State::ReceivAddChoice).await?;
     }
 
     Ok(())
@@ -117,14 +117,20 @@ pub async fn send_taskname(
     msg: Message,
     category: String,
 ) -> crate::errors::Result<()> {
-    bot.send_message(dialogue.chat_id(), "Send description of the homework:")
-        .await?;
-    dialogue
-        .update(State::AddDescription {
-            category,
-            taskname: msg.text().unwrap().to_string(),
-        })
-        .await?;
+    if let Ok(_task) = select_task(msg.text().unwrap()) {
+        bot.send_message(dialogue.chat_id(), "Task already exists, Send another name")
+            .await?;
+    } else {
+        bot.send_message(dialogue.chat_id(), "Send description of the homework:")
+            .await?;
+        dialogue
+            .update(State::AddDescription {
+                category,
+                taskname: msg.text().unwrap().to_string(),
+            })
+            .await?;
+    }
+    
     Ok(())
 }
 
