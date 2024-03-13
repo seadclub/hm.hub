@@ -16,19 +16,19 @@ pub async fn edit(bot: Bot, dialogue: MyDialogue, msg: Message) -> crate::errors
     if msg.text().unwrap() == "/edit" {
         bot.send_message(msg.chat.id, "Send the name of the task you want to edit")
             .await?;
-        return Ok(())
+        return Ok(());
     }
-    
+
     let argument: Vec<&str> = msg.text().unwrap().split_whitespace().collect();
     if let Ok(_task) = select_task(argument[1]) {
         bot.send_message(msg.chat.id, "Edit a Task")
-        .reply_markup(InlineKeyboardMarkup::new(edit_buttons()))
-        .await?;
+            .reply_markup(InlineKeyboardMarkup::new(edit_buttons()))
+            .await?;
         dialogue
-        .update(State::ReceivEditChoice {
-            taskname: argument[1].to_string(),
-        })
-        .await?;
+            .update(State::ReceiveEditChoice {
+                taskname: argument[1].to_string(),
+            })
+            .await?;
     } else {
         bot.send_message(msg.chat.id, "Task not found").await?;
     }
@@ -56,27 +56,19 @@ pub async fn receive_edit_button(
                 "Send new deadline\nExample: 2023-04-12):",
             )
             .await?;
-            dialogue
-                .update(State::EditDeadline { taskname: taskname })
-                .await?;
+            dialogue.update(State::EditDeadline { taskname }).await?;
         } else if product == "description" {
             bot.send_message(dialogue.chat_id(), "Send new description:")
                 .await?;
-            dialogue
-                .update(State::EditDescription { taskname: taskname })
-                .await?;
+            dialogue.update(State::EditDescription { taskname }).await?;
         } else if product == "taskname" {
             bot.send_message(dialogue.chat_id(), "Send new name:")
                 .await?;
-            dialogue
-                .update(State::EditTaskName { taskname: taskname })
-                .await?;
+            dialogue.update(State::EditTaskName { taskname }).await?;
         } else if product == "category" {
             bot.send_message(dialogue.chat_id(), "Send new category:")
                 .await?;
-            dialogue
-                .update(State::EditCategory { taskname: taskname })
-                .await?;
+            dialogue.update(State::EditCategory { taskname }).await?;
         }
     }
 
@@ -95,13 +87,15 @@ pub async fn edit_taskname(
             "Taskname has been updated successfully!",
         )
         .await?;
-    
+
         bot.send_message(msg.chat.id, "Choose what you want to edit next")
             .reply_markup(InlineKeyboardMarkup::new(edit_buttons()))
             .await?;
-    
+
         dialogue
-            .update(State::ReceivEditChoice { taskname: msg.text().unwrap().to_string() })
+            .update(State::ReceiveEditChoice {
+                taskname: msg.text().unwrap().to_string(),
+            })
             .await?;
     } else {
         bot.send_message(
@@ -132,7 +126,7 @@ pub async fn edit_description(
         .await?;
 
     dialogue
-        .update(State::ReceivEditChoice { taskname: taskname })
+        .update(State::ReceiveEditChoice { taskname })
         .await?;
     Ok(())
 }
@@ -156,14 +150,14 @@ pub async fn edit_deadline(
             .await?;
 
         dialogue
-            .update(State::ReceivEditChoice { taskname: taskname })
+            .update(State::ReceiveEditChoice { taskname })
             .await?;
     } else {
         bot.send_message(
             dialogue.chat_id(),
             "Invalid deadline format. Please enter the deadline in the format: YYYY-MM-DD\nExample: 2023-04-12",
-        )
-        .await?;
+            )
+            .await?;
     }
     Ok(())
 }
@@ -175,19 +169,18 @@ pub async fn edit_category(
     taskname: String,
 ) -> crate::errors::Result<()> {
     if let Ok(category_id) = select_category(msg.text().unwrap()) {
-
         update_category(&taskname, &category_id.to_string()).unwrap();
         let message = format!("Category has been moved to {}", msg.text().unwrap());
-        
+
         bot.send_message(dialogue.chat_id(), message).await?;
-    
+
         bot.send_message(msg.chat.id, "Choose what you want to edit next")
             .reply_markup(InlineKeyboardMarkup::new(edit_buttons()))
             .await?;
-    
+
         dialogue
-        .update(State::ReceivEditChoice { taskname: taskname })
-        .await?;
+            .update(State::ReceiveEditChoice { taskname })
+            .await?;
     } else {
         bot.send_message(
             dialogue.chat_id(),

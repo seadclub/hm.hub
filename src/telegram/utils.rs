@@ -10,6 +10,10 @@ pub fn check_deadline(deadline: &str) -> bool {
     }
 }
 
+pub fn get_telegram_user_id(msg: &MyDialogue) -> String {
+    msg.chat_id().to_string()
+}
+
 pub fn pages(page: usize) -> Vec<Vec<InlineKeyboardButton>> {
     let categories = select_all_categories().unwrap();
     let additional_row: Vec<InlineKeyboardButton> = ["next", "previous"]
@@ -36,7 +40,8 @@ pub fn pages(page: usize) -> Vec<Vec<InlineKeyboardButton>> {
             .collect::<Vec<_>>();
         products.push(vec![additional_row[1].clone()]);
         return products;
-    } else if page == 1 {
+    }
+    if page == 1 {
         let mut products = categories[..4]
             .iter()
             .map(|product| {
@@ -48,23 +53,18 @@ pub fn pages(page: usize) -> Vec<Vec<InlineKeyboardButton>> {
             .collect::<Vec<_>>();
         products.push(vec![additional_row[0].clone()]);
         return products;
-    } else {
-        let mut products = categories[((page - 1) * 4)..(page * 4)]
-            .iter()
-            .map(|product| {
-                vec![InlineKeyboardButton::callback(
-                    product.to_string(),
-                    product.to_string(),
-                )]
-            })
-            .collect::<Vec<_>>();
-        products.push(additional_row);
-        return products;
     }
-}
-
-pub fn get_telegram_user_id(msg: &MyDialogue) -> String {
-    return msg.chat_id().to_string()
+    let mut products = categories[((page - 1) * 4)..(page * 4)]
+        .iter()
+        .map(|product| {
+            vec![InlineKeyboardButton::callback(
+                product.to_string(),
+                product.to_string(),
+            )]
+        })
+        .collect::<Vec<_>>();
+    products.push(additional_row);
+    products
 }
 
 pub fn edit_buttons() -> Vec<Vec<InlineKeyboardButton>> {
@@ -76,15 +76,12 @@ pub fn edit_buttons() -> Vec<Vec<InlineKeyboardButton>> {
     let edit_buttons = edit_keys
         .iter()
         .map(|button| {
-            InlineKeyboardButton::callback(
-                button.to_string(),
-                button.to_string().to_lowercase(),
-            )
+            InlineKeyboardButton::callback(button.to_string(), button.to_string().to_lowercase())
         })
         .collect::<Vec<_>>();
 
     inlines_buttons.push(edit_buttons);
     inlines_buttons.push(vec![finish_button]);
-    
+
     inlines_buttons
 }

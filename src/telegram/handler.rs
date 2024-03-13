@@ -19,8 +19,8 @@ pub fn schema() -> Handler<'static, DependencyMap, crate::errors::Result<()>, Dp
         .branch(case![Command::Cancel].endpoint(cancel));
 
     let callback_query_handler = Update::filter_callback_query()
-        .branch(case![State::ReceivAddChoice].endpoint(receive_add_button))
-        .branch(case![State::ReceivEditChoice { taskname }].endpoint(receive_edit_button));
+        .branch(case![State::ReceiveAddChoice].endpoint(receive_add_button))
+        .branch(case![State::ReceiveEditChoice { taskname }].endpoint(receive_edit_button));
 
     let message_handler = Update::filter_message()
         .branch(command_handler)

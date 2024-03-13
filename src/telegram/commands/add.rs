@@ -1,5 +1,6 @@
 use crate::db::{
-    insert_category, insert_homework, insert_user, select_all_categories, select_category, select_task,
+    insert_category, insert_homework, insert_user, select_all_categories, select_category,
+    select_task,
 };
 use crate::models::{MyDialogue, State};
 use crate::telegram::utils::{check_deadline, get_telegram_user_id, pages};
@@ -30,33 +31,32 @@ pub async fn add(bot: Bot, dialogue: MyDialogue, msg: Message) -> crate::errors:
             .reply_markup(InlineKeyboardMarkup::new(products))
             .await?;
 
-        dialogue.update(State::ReceivAddChoice).await?;
+        dialogue.update(State::ReceiveAddChoice).await?;
         return Ok(());
-    } else {
-        let mut products = categories[..4]
-            .iter()
-            .map(|product| {
-                vec![InlineKeyboardButton::callback(
-                    product.to_string(),
-                    product.to_string(),
-                )]
-            })
-            .collect::<Vec<_>>();
-
-        let additional_row = ["next"]
-            .iter()
-            .map(|&product| InlineKeyboardButton::callback(product.to_string(), "next_2"))
-            .collect();
-
-        products.push(additional_row);
-        products.push(vec![create_row]);
-
-        bot.send_message(msg.chat.id, "Select a subject:")
-            .reply_markup(InlineKeyboardMarkup::new(products))
-            .await?;
-
-        dialogue.update(State::ReceivAddChoice).await?;
     }
+    let mut products = categories[..4]
+        .iter()
+        .map(|product| {
+            vec![InlineKeyboardButton::callback(
+                product.to_string(),
+                product.to_string(),
+            )]
+        })
+        .collect::<Vec<_>>();
+
+    let additional_row = ["next"]
+        .iter()
+        .map(|&product| InlineKeyboardButton::callback(product.to_string(), "next_2"))
+        .collect();
+
+    products.push(additional_row);
+    products.push(vec![create_row]);
+
+    bot.send_message(msg.chat.id, "Select a subject:")
+        .reply_markup(InlineKeyboardMarkup::new(products))
+        .await?;
+
+    dialogue.update(State::ReceiveAddChoice).await?;
 
     Ok(())
 }
@@ -130,7 +130,7 @@ pub async fn send_taskname(
             })
             .await?;
     }
-    
+
     Ok(())
 }
 
@@ -174,8 +174,8 @@ pub async fn send_deadline(
         bot.send_message(
             dialogue.chat_id(),
             "Invalid deadline format. Please enter the deadline in the format: YYYY-MM-DD\nExample: 2023-04-12",
-        )
-        .await?;
+            )
+            .await?;
     }
     Ok(())
 }

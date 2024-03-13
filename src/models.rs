@@ -7,7 +7,7 @@ pub type MyDialogue = Dialogue<State, InMemStorage<State>>;
 #[derive(BotCommands, Clone)]
 #[command(
     rename_rule = "lowercase",
-    description = "These commands are supported:"
+    description = "these commands are supported:"
 )]
 pub enum Command {
     #[command(description = "start the bot")]
@@ -26,7 +26,7 @@ pub enum Command {
 pub enum State {
     #[default]
     Start,
-    ReceivAddChoice,
+    ReceiveAddChoice,
     CreateCategory,
     AddTaskName {
         category: String,
@@ -40,7 +40,7 @@ pub enum State {
         taskname: String,
         description: String,
     },
-    ReceivEditChoice {
+    ReceiveEditChoice {
         taskname: String,
     },
     EditTaskName {
@@ -60,7 +60,7 @@ pub enum State {
 #[derive(Debug)]
 pub struct Task {
     pub name: String,
-    pub desc: String,
+    pub description: String,
     pub deadline: String,
     pub date_created: String,
     pub category_id: i32,

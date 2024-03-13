@@ -61,17 +61,19 @@ pub fn select_task(task_name: &str) -> Result<Task, rusqlite::Error> {
     let conn =
         create_connection().expect("Failed to open database connection at select_all_categories");
 
-
-    let task: Task =
-    conn.query_row("SELECT * FROM homework WHERE name = ?", &[task_name], |row| {
-        Ok(Task {
-            name: task_name.to_string(),
-            desc: row.get("desc")?,
-            deadline: row.get("deadline")?,
-            date_created: row.get("date_created")?,
-            category_id: row.get("category_id")?,
-        })
-    })?;
+    let task: Task = conn.query_row(
+        "SELECT * FROM homework WHERE name = ?",
+        &[task_name],
+        |row| {
+            Ok(Task {
+                name: task_name.to_string(),
+                description: row.get("description")?,
+                deadline: row.get("deadline")?,
+                date_created: row.get("date_created")?,
+                category_id: row.get("category_id")?,
+            })
+        },
+    )?;
 
     Ok(task)
 }
