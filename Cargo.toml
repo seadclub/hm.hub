@@ -2,7 +2,7 @@
 name = "hh"
 version = "0.1.0"
 edition = "2021"
-authors = ["github.com/DmitroPodolsky", "github.com/geekenji"]
+authors = ["github.com/DmitroPodolsky", "github.com/kenjitheman"]
 description = "Centralized platform to manage and access your university homework information."
 license = "MIT"
 repository = "github.com/seadclub/hh.git"
